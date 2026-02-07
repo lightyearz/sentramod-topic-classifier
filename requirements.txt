@@ -1,0 +1,33 @@
+# ONNX-only requirements (NO PyTorch - saves ~2.5GB!)
+# Image size: ~800MB (vs 3GB with PyTorch+BART)
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# AI APIs (optional fallback)
+anthropic==0.39.0
+google-generativeai==0.3.2
+
+# Cache & Database
+redis==5.0.1
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.23
+
+# HTTP Client
+httpx==0.25.2
+
+# ONNX Runtime (NO PyTorch!)
+numpy<2.0.0
+transformers==4.36.0
+optimum[onnxruntime]==1.16.1
+onnxruntime==1.16.3
+
+# NOTE: PyTorch (torch==2.1.0) REMOVED
+# BART fallback disabled - ONNX + crisis detection is sufficient
+
+# Utilities
+huggingface_hub

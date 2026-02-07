@@ -1,0 +1,6 @@
+# ONNX models (download with: python download_models.py)
+models/deberta-onnx/
+
+.env
+.venv/
+venv/

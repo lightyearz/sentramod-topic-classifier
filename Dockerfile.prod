@@ -1,0 +1,39 @@
+# Production Dockerfile for Topic Classifier Service
+FROM python:3.11-slim as base
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy and install shared package
+COPY modai_shared/ /app/modai_shared/
+RUN pip install --no-cache-dir -e /app/modai_shared
+
+# Copy requirements and install service dependencies
+COPY services/topic-classifier-service/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY services/topic-classifier-service/ .
+
+# Models are downloaded at runtime from HuggingFace
+# Create empty models directory for runtime downloads
+RUN mkdir -p ./models
+
+# Create non-root user
+RUN useradd -m -u 1000 modai && chown -R modai:modai /app
+USER modai
+
+# Expose port
+EXPOSE 8009
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8009/health')" || exit 1
+
+# Run the application with single worker due to ML model memory requirements
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8009} --workers 1"]
