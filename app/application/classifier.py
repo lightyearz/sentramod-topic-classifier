@@ -90,11 +90,15 @@ class TopicClassifier:
                     port=settings.REDIS_PORT,
                     db=settings.REDIS_DB,
                     decode_responses=True,
+                    socket_timeout=5.0,  # Don't hang forever
+                    socket_connect_timeout=5.0
                 )
-                self.redis_client.ping()
-                print(f"✅ Redis connected for caching")
+                print(f"📡 Redis connection attempt to {settings.REDIS_HOST}:{settings.REDIS_PORT}...")
+                # We won't ping sync in __init__ if it might hang
+                # The first async call will detect if it's down
+                print(f"✅ Redis client configured for caching")
             except Exception as e:
-                print(f"⚠️ Redis connection failed: {e}")
+                print(f"⚠️ Redis configuration failed: {e}")
                 self.redis_client = None
 
         print(f"✅ Topic Classifier initialized with {self.method} method")
@@ -558,12 +562,12 @@ async def initialize_classifier():
             # Don't raise - allow service to continue running with failed classifier
 
 
-async def get_classifier(timeout: float = 300.0) -> TopicClassifier:
+async def get_classifier(timeout: float = 30.0) -> TopicClassifier:
     """
     Get classifier instance, waiting for initialization if needed.
 
     Args:
-        timeout: Maximum seconds to wait for initialization (default 300s = 5min)
+        timeout: Maximum seconds to wait for initialization (default 30s)
 
     Returns:
         Initialized TopicClassifier instance

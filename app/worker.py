@@ -53,7 +53,10 @@ class TopicClassificationWorker:
         """Connect to Redis and Database"""
         if not self.redis_client:
             self.redis_client = await redis.from_url(
-                self.redis_url, decode_responses=True
+                self.redis_url, 
+                decode_responses=True,
+                socket_timeout=5.0,
+                socket_connect_timeout=5.0
             )
             logger.info("✅ Worker connected to Redis")
 
